@@ -13,7 +13,7 @@ def calculate_copper_r20(measured_r, measured_temp, nominal_r):
     return r_20, deviation
 
 # --- Coil Database ---
-# Defines the number of pancakes and the nominal resistance for each pancake
+# Defines the number of pancakes and the default nominal resistance for each pancake
 COILS = {
     "Q2": {"pancakes": 1, "nominals": [0.1]},
     "MP25": {"pancakes": 1, "nominals": [0.2]},
@@ -54,23 +54,30 @@ measurements = []
 
 # Dynamically generate input fields based on the number of pancakes
 for i in range(coil_info["pancakes"]):
-    nominal_val = coil_info["nominals"][i]
+    default_nominal = coil_info["nominals"][i]
     
     c1, c2 = st.columns(2)
     with c1:
-        # Default the measured value to the nominal value to start
         meas_r = st.number_input(
             f"Pancake {i+1} Measured R (Ω)", 
             min_value=0.0000000, 
-            value=float(nominal_val), 
+            value=float(default_nominal), 
             step=0.0000100, 
             format="%.7f", 
-            key=f"meas_{i}" # Unique key required by Streamlit for dynamic loops
+            key=f"meas_{i}" 
         )
     with c2:
-        st.text_input(f"Pancake {i+1} Nominal R20", value=f"{nominal_val:.7f} Ω", disabled=True, key=f"nom_{i}")
+        # Changed to an editable number_input so you can override the database defaults
+        nom_r = st.number_input(
+            f"Pancake {i+1} Nominal R20 (Ω)", 
+            min_value=0.0000000, 
+            value=float(default_nominal), 
+            step=0.0000100, 
+            format="%.7f", 
+            key=f"nom_{i}"
+        )
         
-    measurements.append((meas_r, nominal_val))
+    measurements.append((meas_r, nom_r))
 
 # --- Calculation & Output Section ---
 if st.button("Calculate R20 Results", type="primary"):
