@@ -22,6 +22,13 @@ COILS = {
     "BBS": {"pancakes": 1, "nominals": [0.5]}
 }
 
+# --- Session State Management ---
+# Callback to clear saved values when the coil dropdown changes or the reset button is pressed
+def reset_measurements():
+    for key in list(st.session_state.keys()):
+        if "_meas_" in key or "_nom_" in key:
+            del st.session_state[key]
+
 # --- UI Configuration ---
 st.set_page_config(page_title="Coil QA Calculator", layout="centered")
 
@@ -29,7 +36,12 @@ st.title("Copper Coil R20 Calculator")
 st.markdown("Calculate temperature-corrected resistance and tolerances for specific coil assemblies.")
 
 # --- Coil Selection ---
-selected_coil = st.selectbox("Select Coil Model", list(COILS.keys()))
+# The on_change parameter triggers the reset callback whenever a new coil is selected
+selected_coil = st.selectbox(
+    "Select Coil Model", 
+    list(COILS.keys()),
+    on_change=reset_measurements
+)
 coil_info = COILS[selected_coil]
 
 st.divider()
@@ -48,7 +60,12 @@ with col3:
 st.divider()
 
 # --- Dynamic Pancake Inputs ---
-st.subheader(f"Measurements for {selected_coil} ({coil_info['pancakes']} Pancake{'s' if coil_info['pancakes'] > 1 else ''})")
+# Header layout with an explicit reset button for the active coil
+header_col1, header_col2 = st.columns([3, 1])
+with header_col1:
+    st.subheader(f"Measurements for {selected_coil} ({coil_info['pancakes']} Pancake{'s' if coil_info['pancakes'] > 1 else ''})")
+with header_col2:
+    st.button("🔄 Reset Inputs", on_click=reset_measurements, use_container_width=True)
 
 measurements = []
 
@@ -58,7 +75,6 @@ for i in range(coil_info["pancakes"]):
     
     c1, c2 = st.columns(2)
     with c1:
-        # Appended selected_coil to the key to force a refresh when the coil changes
         meas_r = st.number_input(
             f"Pancake {i+1} Measured R (Ω)", 
             min_value=0.0000000, 
@@ -68,7 +84,6 @@ for i in range(coil_info["pancakes"]):
             key=f"{selected_coil}_meas_{i}" 
         )
     with c2:
-        # Appended selected_coil to the key to force a refresh when the coil changes
         nom_r = st.number_input(
             f"Pancake {i+1} Nominal R20 (Ω)", 
             min_value=0.0000000, 
