@@ -77,8 +77,15 @@ if st.button("Calculate R20 Results", type="primary"):
     st.divider()
     st.subheader("QA Test Results")
     
+    total_measured_r = 0.0
+    total_nominal_r = 0.0
+    
     for i, (meas_r, nom_r) in enumerate(measurements):
         r20, deviation = calculate_copper_r20(meas_r, measured_temp, nom_r)
+        
+        # Add to totals for overall assembly check
+        total_measured_r += meas_r
+        total_nominal_r += nom_r
         
         st.markdown(f"**Pancake {i+1} Analysis**")
         res_col, dev_col = st.columns(2)
@@ -95,6 +102,24 @@ if st.button("Calculate R20 Results", type="primary"):
         # Add spacing between pancake results
         if i < len(measurements) - 1:
             st.write("---")
+            
+    # --- Total Assembly Calculation for Multi-Pancake Coils ---
+    if coil_info["pancakes"] > 1:
+        st.divider()
+        st.subheader(f"Total Assembly Results ({selected_coil})")
+        
+        total_r20, total_deviation = calculate_copper_r20(total_measured_r, measured_temp, total_nominal_r)
+        
+        tot_res_col, tot_dev_col = st.columns(2)
+        
+        tot_res_col.metric(label="Total Calculated R20", value=f"{total_r20:.7f} Ω")
+        
+        if lower_tolerance <= total_deviation <= upper_tolerance:
+            tot_dev_col.metric(label="Total Deviation", value=f"{total_deviation:.5f} %", delta="Pass", delta_color="normal")
+            st.success(f"✅ **ASSEMBLY PASS**: The total coil deviation ({total_deviation:.5f}%) is within limits.")
+        else:
+            tot_dev_col.metric(label="Total Deviation", value=f"{total_deviation:.5f} %", delta="Fail", delta_color="inverse")
+            st.error(f"❌ **ASSEMBLY FAIL**: The total coil deviation ({total_deviation:.5f}%) is outside limits.")
 
 # --- Signature Section ---
 st.markdown("---")
