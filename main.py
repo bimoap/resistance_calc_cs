@@ -58,23 +58,24 @@ for i in range(coil_info["pancakes"]):
     
     c1, c2 = st.columns(2)
     with c1:
+        # Appended selected_coil to the key to force a refresh when the coil changes
         meas_r = st.number_input(
             f"Pancake {i+1} Measured R (Ω)", 
             min_value=0.0000000, 
             value=float(default_nominal), 
             step=0.0000100, 
             format="%.7f", 
-            key=f"meas_{i}" 
+            key=f"{selected_coil}_meas_{i}" 
         )
     with c2:
-        # Changed to an editable number_input so you can override the database defaults
+        # Appended selected_coil to the key to force a refresh when the coil changes
         nom_r = st.number_input(
             f"Pancake {i+1} Nominal R20 (Ω)", 
             min_value=0.0000000, 
             value=float(default_nominal), 
             step=0.0000100, 
             format="%.7f", 
-            key=f"nom_{i}"
+            key=f"{selected_coil}_nom_{i}"
         )
         
     measurements.append((meas_r, nom_r))
