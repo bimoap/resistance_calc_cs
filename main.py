@@ -1,9 +1,14 @@
 import streamlit as st
 
-def calculate_copper_r20(measured_r, measured_temp, nominal_r):
-    """Calculates R20 and deviation for standard copper (constant = 234.5)."""
-    copper_constant = 234.5
-    r_20 = measured_r * ((copper_constant + 20.0) / (copper_constant + measured_temp))
+def calculate_copper_r20(measured_r, measured_temp, nominal_r, method="Linear (0.00393)"):
+    """Calculates R20 and deviation using either the production floor standard or the exact method."""
+    if method == "Exact (Constant 234.5)":
+        copper_constant = 234.5
+        r_20 = measured_r * ((copper_constant + 20.0) / (copper_constant + measured_temp))
+    else:
+        # Default production floor method
+        alpha = 0.00393
+        r_20 = measured_r * (1 + (alpha * (20.0 - measured_temp)))
     
     if nominal_r > 0:
         deviation = ((r_20 - nominal_r) / nominal_r) * 100.0
@@ -48,6 +53,15 @@ st.divider()
 
 # --- Global Test Parameters ---
 st.subheader("Global Test Parameters")
+
+# Added Method Selection
+calc_method = st.radio(
+    "Calculation Method",
+    options=["Linear (0.00393)", "Exact (Constant 234.5)"],
+    horizontal=True,
+    help="Select the formula used to calculate R20. Defaults to production floor standard."
+)
+
 col1, col2, col3 = st.columns(3)
 
 with col1:
@@ -99,12 +113,13 @@ for i in range(coil_info["pancakes"]):
 if st.button("Calculate R20 Results", type="primary"):
     st.divider()
     st.subheader("QA Test Results")
+    st.caption(f"Using method: **{calc_method}**")
     
     total_measured_r = 0.0
     total_nominal_r = 0.0
     
     for i, (meas_r, nom_r) in enumerate(measurements):
-        r20, deviation = calculate_copper_r20(meas_r, measured_temp, nom_r)
+        r20, deviation = calculate_copper_r20(meas_r, measured_temp, nom_r, calc_method)
         
         # Add to totals for overall assembly check
         total_measured_r += meas_r
@@ -131,7 +146,7 @@ if st.button("Calculate R20 Results", type="primary"):
         st.divider()
         st.subheader(f"Total Assembly Results ({selected_coil})")
         
-        total_r20, total_deviation = calculate_copper_r20(total_measured_r, measured_temp, total_nominal_r)
+        total_r20, total_deviation = calculate_copper_r20(total_measured_r, measured_temp, total_nominal_r, calc_method)
         
         tot_res_col, tot_dev_col = st.columns(2)
         
