@@ -1,3 +1,5 @@
+Here is the updated code with the Nominal R20 and Measured R input fields swapped. Nominal R20 will now appear in the left column, and Measured R will be in the right column.
+```python
 import streamlit as st
 
 def calculate_copper_r20(measured_r, measured_temp, nominal_r, method="Linear (0.00393)"):
@@ -89,15 +91,6 @@ for i in range(coil_info["pancakes"]):
     
     c1, c2 = st.columns(2)
     with c1:
-        meas_r = st.number_input(
-            f"Pancake {i+1} Measured R (Ω)", 
-            min_value=0.0000000, 
-            value=float(default_nominal), 
-            step=0.0000100, 
-            format="%.7f", 
-            key=f"{selected_coil}_meas_{i}" 
-        )
-    with c2:
         nom_r = st.number_input(
             f"Pancake {i+1} Nominal R20 (Ω)", 
             min_value=0.0000000, 
@@ -105,6 +98,15 @@ for i in range(coil_info["pancakes"]):
             step=0.0000100, 
             format="%.7f", 
             key=f"{selected_coil}_nom_{i}"
+        )
+    with c2:
+        meas_r = st.number_input(
+            f"Pancake {i+1} Measured R (Ω)", 
+            min_value=0.0000000, 
+            value=float(default_nominal), 
+            step=0.0000100, 
+            format="%.7f", 
+            key=f"{selected_coil}_meas_{i}" 
         )
         
     measurements.append((meas_r, nom_r))
@@ -171,3 +173,5 @@ st.markdown(
     """, 
     unsafe_allow_html=True
 )
+
+```
