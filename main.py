@@ -1,5 +1,3 @@
-Here is the updated code with the Nominal R20 and Measured R input fields swapped. Nominal R20 will now appear in the left column, and Measured R will be in the right column.
-```python
 import streamlit as st
 
 def calculate_copper_r20(measured_r, measured_temp, nominal_r, method="Linear (0.00393)"):
@@ -173,5 +171,3 @@ st.markdown(
     """, 
     unsafe_allow_html=True
 )
-
-```
